@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>生成数独</title>
+  <style>
+    h1 {
+      font-family: "Arial", sans-serif;
+      font-size: 28px;
+      color: #356; /* 设置标题颜色为深灰色 */
+      text-align: center;
+      margin-top: 20px;
+    }
+
+    .sudoku-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+    }
+    table {
+      border-collapse: collapse;
+      margin-bottom: 10px;
+    }
+    td {
+      width: 30px;
+      height: 30px;
+      text-align: center;
+      border: 1px solid orange;
+    }
+	
+	.bottom-bold {
+      border-bottom: 3px solid orange;
+    }
+    
+	.top-bold {
+      border-top: 3px solid orange;
+    }
+	
+	.left-bold {
+      border-left: 3px solid orange;
+    }
+	
+	.right-bold {
+      border-right: 3px solid orange;
+    }
+	
+    .wrong {
+      outline: 1.5px solid red;  /*将最外面边框改为红色 */
+
+    }
+    .empty {
+      background-color: #eee;
+    }
+    td.active {
+      border-width: 2px;
+      border-color: red; /* 添加边框颜色为红色 */
+    }
+
+   
+
+    .button-row {
+      display: flex;
+      justify-content: space-between; /* 按钮之间有空隙 */
+      align-items: center; /* 垂直居中对齐 */
+      margin-top: 20px; /* 上边距为20像素，根据需要进行调整 */
+    }
+
+/* 其他样式设置可以根据需要进行调整 */
+
+    
+    .button-row button {
+      display: block;
+      margin-bottom: 10px;
+    }
+
+    #generateButton {
+      margin-left: 500px; /* 设置右边距为10像素，根据需要进行调整 */
+      border-width: 2px;
+      border-style: solid;
+      color: white;
+      background-color: orange;
+    }
+
+    #submitButton {
+      margin-right: 500px; /* 设置右边距为10像素，根据需要进行调整 */
+      color: white;
+      background-color: orange;
+    }
+
+
+  </style>
+</head>
+<body>
+  <div>
+    <h1>Sudoku Game</h1>
+    <div class="button-row">
+      <div class="button-container">
+        <button id="generateButton">生成新数独</button>
+      </div>
+      <div class="submit-container">
+        <button id="submitButton">提交</button>
+      </div>
+    </div>
+  </div>
+  <div id="sudokuContainer" class="sudoku-container"></div>
+</body>
+</html>
+
+
+  
+
+  <script>
+    var currentTable = null; // 当前正在答题的数独表格
+	var isClicked = false;
+
+    function generateSudoku() {
+      var container = document.getElementById("sudokuContainer");
+      container.innerHTML = "";
+
+      // 创建总共3行的外层容器
+      for (var i = 0; i < 3; i++) {
+        var rowContainer = document.createElement("div");
+        container.appendChild(rowContainer);
+
+        // 在每行容器中创建三个九宫格
+        for (var j = 0; j < 3; j++) {
+          var table = document.createElement("table");
+          rowContainer.appendChild(table);
+          generateSudokuBoard(table);
+        }
+      }
+
+      enableStartButton();
+    }
+
+    function generateSudokuBoard(table) {
+      var sudoku = generateSudokuData();
+
+      for (var i = 0; i < 9; i++) {
+        var row = table.insertRow(i);
+		
+        for (var j = 0; j < 9; j++) {
+          var cell = row.insertCell(j);
+		  
+		 
+		  
+		  
+          if (sudoku[i][j] !== null) {
+            cell.innerHTML = sudoku[i][j];
+          } else {
+            cell.className = "empty";
+            cell.addEventListener("click", function(event) {
+              if (currentTable) {
+                currentTable.classList.remove("active");
+              }
+              currentTable = this.parentNode.parentNode;
+              currentTable.classList.add("active");
+              makeCellEditable(this); // 添加点击空白格时的编辑功能
+            });
+          }
+		  
+		   if(i === 0)
+			cell.className += " top-bold";
+		  if ( (i + 1) % 3 === 0 ) {
+			cell.className += " bottom-bold";
+        }
+		  if(j === 0)
+			cell.className += " left-bold";
+		  if ( (j + 1) % 3 === 0 ) {
+			cell.className += " right-bold";
+        }
+		
+        }
+      }
+	  
+	  
+    }
+
+    function generateSudokuData() {
+      var sudoku = new Array(9);
+      for (var i = 0; i < 9; i++) {
+        sudoku[i] = new Array(9);
+      }
+
+      var numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+      for (var i = 0; i < 9; i++) {
+        shuffleArray(numbers);
+        for (var j = 0; j < 9; j++) {
+          if (Math.random() < 0.6) {
+            sudoku[i][j] = null;
+          } else {
+            sudoku[i][j] = numbers[j];
+          }
+        }
+      }
+
+      return sudoku;
+    }
+    
+
+    function generateSudokuData() {
+  var sudoku = new Array(9);
+  for (var i = 0; i < 9; i++) {
+    sudoku[i] = new Array(9);
+  }
+
+  // 初始化数独盘面
+  for (var i = 0; i < 9; i++) {
+    for (var j = 0; j < 9; j++) {
+      sudoku[i][j] = null;
+    }
+  }
+
+  // 使用回溯算法填充数独并挖空
+  fillAndRemove(sudoku, 0, 0);
+
+  return sudoku;
+}
+
+	function fillAndRemove(sudoku, row, col) {
+  // 达到数独表格最后一个单元格时，递归结束
+  if (row === 9) {
+    return true;
+  }
+
+  // 计算下一个单元格的行和列
+  var nextRow = col === 8 ? row + 1 : row;
+  var nextCol = (col + 1) % 9;
+
+  // 对可选数字进行随机排序
+  var numbers = shuffle([1, 2, 3, 4, 5, 6, 7, 8, 9]);
+
+  // 尝试填入数字
+  for (var i = 0; i < numbers.length; i++) {
+    var num = numbers[i];
+    if (isValid(sudoku, row, col, num)) {
+      sudoku[row][col] = num;
+      if (fillAndRemove(sudoku, nextRow, nextCol)) {
+        // 随机挖掉一些数字
+        if (Math.random() < 0.1) {
+          sudoku[row][col] = null;
+        }
+        return true;
+      }
+      sudoku[row][col] = null;
+    }
+  }
+
+  return false;
+}
+
+// 其他函数和shuffle辅助函数的代码请参考之前的回答
+
+
+	function fillSudoku(sudoku, row, col) {
+  // 达到数独表格最后一个单元格时，递归结束
+  if (row === 9) {
+    return true;
+  }
+
+  // 计算下一个单元格的行和列
+  var nextRow = col === 8 ? row + 1 : row;
+  var nextCol = (col + 1) % 9;
+
+  // 对可选数字进行随机排序
+  var numbers = shuffle([1, 2, 3, 4, 5, 6, 7, 8, 9]);
+
+  // 尝试填入数字
+  for (var i = 0; i < numbers.length; i++) {
+    var num = numbers[i];
+    if (isValid(sudoku, row, col, num)) {
+      sudoku[row][col] = num;
+      if (fillSudoku(sudoku, nextRow, nextCol)) {
+        return true;
+      }
+      sudoku[row][col] = null;
+    }
+  }
+
+  return false;
+}
+
+	function isValid(sudoku, row, col, num) {
+  // 检查行是否合法
+  for (var i = 0; i < 9; i++) {
+    if (sudoku[i][col] === num) {
+      return false;
+    }
+  }
+
+  // 检查列是否合法
+  for (var j = 0; j < 9; j++) {
+    if (sudoku[row][j] === num) {
+      return false;
+    }
+  }
+
+  // 检查当前所在的九宫格是否合法
+  var startRow = Math.floor(row / 3) * 3;
+  var startCol = Math.floor(col / 3) * 3;
+  for (var i = startRow; i < startRow + 3; i++) {
+    for (var j = startCol; j < startCol + 3; j++) {
+      if (sudoku[i][j] === num) {
+        return false;
+      }
+    }
+  }
+
+  return true;
+}
+
+// 辅助函数：随机打乱数组
+	function shuffle(array) {
+  var currentIndex = array.length;
+  var temporaryValue, randomIndex;
+
+  while (currentIndex !== 0) {
+    // 随机选择一个剩余位置
+    randomIndex = Math.floor(Math.random() * currentIndex);
+    currentIndex -= 1;
+
+    // 交换当前位置和随机位置的元素
+    temporaryValue = array[currentIndex];
+    array[currentIndex] = array[randomIndex];
+    array[randomIndex] = temporaryValue;
+  }
+
+  return array;
+}
+
+    function shuffleArray(array) {
+      for (var i = array.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        var temp = array[i];
+        array[i] = array[j];
+        array[j] = temp;
+      }
+    }
+
+    function enableStartButton() {
+      var startButton = document.getElementById("startButton");
+      startButton.disabled = false;
+      startButton.addEventListener("click", function(event) {
+        document.addEventListener("keydown", function(event) {
+          if (currentTable !== null) {
+            var activeCell = currentTable.getElementsByClassName("empty")[0];
+            if (event.keyCode >= 49 && event.keyCode <= 57) { // 检查按键是否为1-9之间的数字
+              activeCell.innerHTML = String.fromCharCode(event.keyCode);
+              activeCell.classList.remove("empty"); // 填入数字后移除 empty 类
+            }
+          }
+        });
+      });
+    }
+
+    function makeCellEditable(cell) {
+  if (!cell.classList.contains("empty")) {
+    return;
+  }
+  cell.setAttribute("contenteditable", true);
+  cell.addEventListener("input", function(event) {
+    // 校验输入内容，只保留1-9之间的数字
+    var input = parseInt(this.textContent);
+    if (!isNaN(input) && input >= 1 && input <= 9) {
+      this.textContent = input; // 使用textContent替代innerHTML
+      //this.classList.remove("empty"); // 填入数字后移除 empty 类
+    } else {
+      this.textContent = "";
+    }
+    this.classList.add("empty"); // 重新添加 empty 类
+  });
+}
+
+
+
+    function disableStartButton() {
+      var startButton = document.getElementById("generateButton");
+
+      startButton.disabled = true;
+    }
+	
+	
+
+	document.getElementById("generateButton").onclick = function() {
+		isClicked = true;
+		generateSudoku(); // 在函数内部调用 generateSudoku() 函数
+		
+};
+
+
+
+    function checkSudoku() {
+      var sudokuTables = document.getElementsByTagName("table");
+      var isCorrect = true;
+
+      for (var i = 0; i < sudokuTables.length; i++) {
+        var table = sudokuTables[i];
+
+        var cells = table.getElementsByClassName("empty");
+        var sudokuData = getSudokuData(table);
+
+        for (var j = 0; j < cells.length; j++) {
+          var cell = cells[j];
+          var row = cell.parentNode.rowIndex;
+          var col = cell.cellIndex;
+          var inputValue = parseInt(cell.textContent);
+          var correctValue = sudokuData[row][col];
+
+          if (inputValue !== correctValue) {
+            isCorrect = false;
+            cell.classList.add("wrong");
+          } else {
+		    
+            cell.classList.remove("wrong");
+          }
+        }
+
+        var gridCells = table.getElementsByClassName("cell");
+        var cellGridIndices = [0, 0, 0, 0, 0, 0, 0, 0, 0];
+
+        for (var j = 0; j < gridCells.length; j++) {
+          var cell = gridCells[j];
+          var row = cell.parentNode.rowIndex;
+          var col = cell.cellIndex;
+          var inputValue = parseInt(cell.textContent);
+          var correctValue = sudokuData[row][col];
+
+          if (inputValue !== correctValue) {
+            var gridIndex = Math.floor(row / 3) * 3 + Math.floor(col / 3);
+            cellGridIndices[gridIndex]++;
+          }
+        }
+
+        for (var j = 0; j < cellGridIndices.length; j++) {
+          var cellCount = cellGridIndices[j];
+
+          if (cellCount > 0) {
+            var gridRow = Math.floor(j / 3) * 3;
+            var gridCol = (j % 3) * 3;
+            var gridCells = Array.prototype.slice.call(table.rows, gridRow, gridRow + 3)
+              .map(function(row) {
+                return Array.prototype.slice.call(row.cells, gridCol, gridCol + 3);
+              })
+              .reduce(function(prev, curr) {
+                return prev.concat(curr);
+              }, []);
+
+            gridCells.forEach(function(cell) {
+              cell.classList.add("wrong");
+            });
+          }
+        }
+      }
+
+      return isCorrect;
+    }
+
+    function getSudokuData(table) {
+      var sudokuData = [];
+
+      // 将数独表格中每个单元格的值存入二维数组
+      for (var i = 0; i < table.rows.length; i++) {
+        var row = [];
+        for (var j = 0; j < table.rows[i].cells.length; j++) {
+          var cell = table.rows[i].cells[j];
+          var value = parseInt(cell.textContent);
+          row.push(value);
+        }
+        sudokuData.push(row);
+      }
+
+      return sudokuData;
+    }
+
+    document.getElementById("submitButton").onclick = function() {
+	
+	if(isClicked){
+      if (checkSudoku()) {
+        alert("数独求解正确！");
+      } else {
+        alert("数独求解错误，请检查红色框内的数字！");
+      }
+    }
+	else
+	{
+		alert("请点击生成数独！");
+	}
+	}
+	;
+	
+  </script>
+</body>
+</html>
