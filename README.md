@@ -1,6 +1,6 @@
 > 这是我们的结队编程作业# sudoku
 # 使用指南
-### 下载“数独主要代码”，在vscode或者pycharm打开文件夹，运行server.py,点击运行结果里的网址即可
+### 下载main分支里的“数独主要代码”，在vscode或者pycharm打开文件夹，运行server.py,点击运行结果里的网址即可
 具体步骤如下（以pycharm为例）
 
 1. 在pycharm打开文件
