@@ -15,6 +15,14 @@
 3.成功打开页面，现在可以开始求解数独了！
   <img width="960" alt="image" src="https://github.com/shoppingaaa/sudoku/assets/143972767/2826c09f-1587-4b23-963c-85b795d4256e">
 
-
+- 难度选择
+  如果想要挑战不同难度的数独，可以修改server.py中的以下代码：
+  
+  `dig_holes(dighole, 45)`
+  
+  把45改成你想要的每个九宫格空白格数，建议在40~55之间。
+  
+  > 可以把挖空数改成1用来检查数独的功能
+  
 
    
