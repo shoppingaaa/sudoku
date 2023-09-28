@@ -7,7 +7,7 @@
    
 <img width="960" alt="image" src="https://github.com/shoppingaaa/sudoku/assets/143972767/193ca3f0-2d07-42c1-83af-0d5b903e7734">
 
-> 确保在你的开发环境中安装了 flask。可以使用以下命令使用 pip 安装 flask：`pip install flask`
+> 确保在你的开发环境中安装了 flask。可以在终端使用以下命令使用 pip 安装 flask：`pip install flask`
 
 2. 运行server.py，访问运行结果里的网址
    <img width="960" alt="image" src="https://github.com/shoppingaaa/sudoku/assets/143972767/d33ad97e-cf06-47ff-979d-c1ad4566d73e">
