@@ -125,14 +125,11 @@
                     }
                 }
                 if (isIncorrect) {
-                    //errorMessages.push("九宫格" + (i + 1) + " 不正确!");
                     if(flag==0)
                     {
                         errorMessages.push("标蓝的格子不正确!");
                         flag=1;
                     }
-                    //errorMessages.push("标蓝的格子不正确!");
-                    //break;
                 }
             }
 
@@ -227,8 +224,11 @@ function removeSudoku()
                         var cell = cells[k];
                         if (!cell.hasAttribute("readonly"))
                         {
-                            cell.innerText = "";
-                            cell.style.color = "black"; // 设置文本颜色为黑色
+                            if(cell.style.color == "red")
+                            {
+                                cell.innerText = "";
+                                cell.style.color = "black"; // 设置文本颜色为黑色
+                            }
                         }
                     }
                 }
@@ -256,7 +256,7 @@ function removeSudoku()
     <div class="button-container">
     <button onclick="checkSudoku()">提交</button>
     <button id="viewBtn" onclick="completeSudoku()">查看题解</button>
-    <button id="continueBtn" style="display:none;" onclick="removeSudoku()" >重做</button>
+    <button id="continueBtn" style="display:none;" onclick="removeSudoku()" >继续做</button>
 
     </div>
     <br>
