@@ -31,7 +31,7 @@ def index():
         thread.join()
 
     # 将九个数独谜题传递给模板进行渲染
-    return render_template('sudogame.html', sudokus=sudokus)
+    return render_template('sudogame_update.html', sudokus=sudokus)
 
 
 if __name__ == '__main__':
