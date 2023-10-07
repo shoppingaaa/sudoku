@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Sudoku Puzzle</title>
+    <style>
+        h1 {
+    text-align: center;
+    color: #99CCCC;
+    }
+    #info {
+      text-align: center;
+      top: 20px;
+      right: 20px;
+      background-color: white;
+      padding: 10px;
+      width: 290px;
+      height: 110px;
+      border: 5px solid orange;
+      display: block;
+      margin: auto;
+    }
+    #info strong {
+        font-size: 20px;
+        color:orange;
+        text-align: center;
+        font-weight: bold;
+    }
+    #info strong1 {
+        color:black;
+        font-weight: bold;
+    }
+
+
+
+    .button-container {
+        text-align: center; /* 水平居中对齐按钮 */
+    }
+
+    .button-container button {
+        display: inline-block; /* 将按钮显示为内联块元素 */
+        margin: 0 30px; /* 设置按钮之间的水平间距为 10px（根据需要进行调整） */
+        padding: 10px 20px; /* 设置按钮的内边距为 10px 20px */
+        background-color: orange; /* 设置按钮的背景颜色为橙色 */
+        color: white; /* 设置按钮的文本颜色为黑色 */
+        border: none; /* 移除按钮的边框 */
+        border-radius: 5px; /* 设置按钮的圆角半径为 5px */
+        font-size: 16px; /* 设置按钮的字体大小为 16px */
+        cursor: pointer; /* 设置鼠标指针样式为手型 */
+        text-align: center;  水平居中对齐按钮的文本 */
+    }
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+        }
+
+        .sudoku {
+            margin-bottom: 20px;
+            width: calc(33.333% - 10px);
+            height: auto;
+        }
+
+        table {
+            border-collapse: collapse;
+            margin: 0 auto;
+        }
+
+        td {
+            border: 1px solid orange;
+            width: 30px;
+            height: 30px;
+            text-align: center;
+            font-size: 20px;
+            cursor: pointer;
+        }
+        td:first-child {
+            border-left-width: 3px;
+        }
+        tr:first-child td {
+            border-top-width: 3px;
+        }
+        tr:nth-child(3n+3) td {
+            border-bottom-width: 3px;
+        }
+
+        td:nth-child(3n+3) {
+            border-right-width: 3px;
+        }
+
+        td[readonly] {
+            background-color: white;
+        }
+
+        td[contenteditable="true"] {
+            background-color: lightgrey;
+        }
+    </style>
+    <script>
+        function checkSudoku() {
+            var flag=0;
+            var errorMessages = [];
+            var sudokus = document.getElementsByClassName("sudoku");
+            for (var i = 0; i < sudokus.length; i++) {
+
+                var sudokuTable = sudokus[i].getElementsByTagName("table")[0];
+                var rows = sudokuTable.getElementsByTagName("tr");
+                var sudokuAnswer = JSON.parse(sudokuTable.getAttribute("data-answer"));
+                var isIncorrect = false;
+                for (var j = 0; j < rows.length; j++) {
+                    var cells = rows[j].getElementsByTagName("td");
+                    for (var k = 0; k < cells.length; k++) {
+                        var cell = cells[k];
+                        if (!cell.hasAttribute("readonly")) {
+                            var userInput = parseInt(cell.innerText);
+                            var answer = sudokuAnswer[j][k];
+                            if (userInput !== answer) {
+                                isIncorrect = true;
+                                cell.style.backgroundColor = "#99CCCC";
+                            }
+                            else
+                            {
+                                cell.style.backgroundColor = "lightgrey";
+                            }
+                        }
+                    }
+                }
+                if (isIncorrect) {
+                    //errorMessages.push("九宫格" + (i + 1) + " 不正确!");
+                    if(flag==0)
+                    {
+                        errorMessages.push("标蓝的格子不正确!");
+                        flag=1;
+                    }
+                    //errorMessages.push("标蓝的格子不正确!");
+                    //break;
+                }
+            }
+
+            if (errorMessages.length > 0) {
+                var errorMessage = "";
+                for (var message of errorMessages) {
+                    errorMessage += message + "\n";
+                }
+                alert(errorMessage);
+            } else {
+                alert("恭喜你全部答对了!");
+            }
+        }
+
+
+        // 完成数独谜题的函数
+async function completeSudoku() {
+    var viewBtn = document.getElementById("viewBtn");
+    viewBtn.style.display = "none"; // 隐藏 "查看题解" 按钮
+    var continueBtn = document.getElementById("continueBtn");
+    continueBtn.style.display = "inline"; // 显示 "继续做" 按钮
+
+    // 获取所有类名为 "sudoku" 的元素
+    var sudokus = document.getElementsByClassName("sudoku");
+
+    // 存储所有并发填入答案的 Promise 对象
+    var promises = [];
+
+    // 遍历每个数独谜题元素
+    for (var i = 0; i < sudokus.length; i++) {
+        // 并发处理每个数独谜题的填入答案
+        promises.push(fillSudoku(sudokus[i]));
+    }
+
+    // 等待所有填入答案的操作完成
+    await Promise.all(promises);
+}
+
+// 填入数独答案的函数
+function fillSudoku(sudokuElement) {
+
+    return new Promise((resolve, reject) => {
+        // 获取当前数独谜题的表格元素
+        var sudokuTable = sudokuElement.getElementsByTagName("table")[0];
+
+        // 获取表格中的每一行
+        var rows = sudokuTable.getElementsByTagName("tr");
+
+        // 获取存储数独答案的 JSON 数据，并进行解析
+        var sudokuAnswer = JSON.parse(sudokuTable.getAttribute("data-answer"));
+
+        // 并发地填入数独答案
+        for (var j = 0; j < rows.length; j++) {
+            var cells = rows[j].getElementsByTagName("td");
+
+            for (var k = 0; k < cells.length; k++) {
+                var cell = cells[k];
+
+                // 如果当前单元格没有设置只读属性，则填入数独答案
+                if (!cell.hasAttribute("readonly"))
+                {
+                    //当cell的值为空或者cell的值不等于sudokuAnswer[j][k]时，填入数独答案
+                    if(cell.innerText == "" || cell.innerText != sudokuAnswer[j][k])
+                    {
+                        var answer = sudokuAnswer[j][k];
+                        cell.innerText = answer;
+                        cell.style.color = "red"; // 设置文本颜色为红色
+                    }
+
+                }
+            }
+        }
+
+        // 填入答案完成后，调用 resolve 表示操作成功
+        resolve();
+    });
+}
+function removeSudoku()
+        {
+            var continueBtn = document.getElementById("continueBtn");
+            continueBtn.style.display = "none"; // 隐藏 "继续做" 按钮
+            var viewBtn = document.getElementById("viewBtn");
+            viewBtn.style.display = "inline"; // 显示 "查看题解" 按钮
+
+            var sudokus = document.getElementsByClassName("sudoku");
+            for (var i = 0; i < sudokus.length; i++) {
+                var sudokuTable = sudokus[i].getElementsByTagName("table")[0];
+                var rows = sudokuTable.getElementsByTagName("tr");
+                for (var j = 0; j < rows.length; j++) {
+                    var cells = rows[j].getElementsByTagName("td");
+                    for (var k = 0; k < cells.length; k++) {
+                        var cell = cells[k];
+                        if (!cell.hasAttribute("readonly"))
+                        {
+                            cell.innerText = "";
+                            cell.style.color = "black"; // 设置文本颜色为黑色
+                        }
+                    }
+                }
+            }
+
+        }
+    </script>
+
+</head>
+
+<body>
+    <h1>Sudoku Puzzle</h1>
+
+    <div id="info">
+        <strong>温馨提示</strong><br>
+        作答完成后请点击“<strong1>提交</strong1>”<br>
+
+        提交后可修改答案、查看题解以及重做<br>
+
+        若想挑战新的数独请<strong1>刷新页面</strong1><br>
+        <br>
+
+    </div>
+    <br>
+    <div class="button-container">
+    <button onclick="checkSudoku()">提交</button>
+    <button id="viewBtn" onclick="completeSudoku()">查看题解</button>
+    <button id="continueBtn" style="display:none;" onclick="removeSudoku()" >重做</button>
+
+    </div>
+    <br>
+
+    <div class="container">
+        {% for sudoku in sudokus %}
+            <div class="sudoku">
+                <table data-answer="{{ sudoku[0] }}">
+                    {% for row in sudoku[1] %}
+                        <tr>
+                            {% for num in row %}
+                                {% if num == 0 %}
+                                    <td contenteditable="true"></td>
+                                {% else %}
+                                    <td readonly>{{ num }}</td>
+                                {% endif %}
+                            {% endfor %}
+                        </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        {% endfor %}
+    </div>
+
+
+</body>
+</html>
+
